@@ -1,5 +1,0 @@
-aiogram>=3.0.0
-pocketoptionapi-async
-pydantic
-asyncio
-aiohttp
