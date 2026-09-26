@@ -5,16 +5,24 @@ from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiohttp import web
-from pocketoptionapi_async.client import Client
 
-# Токен бота
+# Безопасный импорт библиотеки Pocket Option
+PocketClient = None
+try:
+    from pocketoptionapi_async import AsyncPocketOptionClient as PocketClient
+except ImportError:
+    try:
+        from pocketoptionapi_async.client import client as PocketClient
+    except ImportError:
+        pass
+
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8069847497:AAFF16NS1TX9NOQ50_UB5u66wATI7GADfJI")
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Фейковый веб-сервер для бесплатного тарифа Render
+# Встроенный веб-сервер для бесплатного тарифа Render ($0)
 async def handle(request):
     return web.Response(text="Bot is running 24/7!")
 
@@ -27,7 +35,6 @@ async def start_web_server():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
-# Логика бота
 user_ssids = {}
 
 def get_main_keyboard():
@@ -49,7 +56,7 @@ async def process_set_ssid(callback: types.CallbackQuery):
 
 @dp.message()
 async def save_ssid(message: types.Message):
-    if "auth" in message.text or "session" in message.text:
+    if "auth" in message.text or "session" in message.text or len(message.text) > 10:
         user_ssids[message.from_user.id] = message.text.strip()
         await message.answer("✅ **SSID сохранен!**", reply_markup=get_main_keyboard(), parse_mode="Markdown")
 
@@ -61,8 +68,13 @@ async def process_profile(callback: types.CallbackQuery):
         await callback.answer()
         return
 
+    if PocketClient is None:
+        await callback.message.answer("❌ Ошибка загрузки модуля Pocket Option.")
+        await callback.answer()
+        return
+
     try:
-        client = Client(ssid=ssid)
+        client = PocketClient(ssid=ssid)
         await client.connect()
         balance = await client.get_balance()
         await client.disconnect()
