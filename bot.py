@@ -16,7 +16,7 @@ except ImportError:
     except ImportError:
         pass
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8069847497:AAFF16NS1TX9NOQ50_UB5u66wATI7GADfJI")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8069847497:AAFFl6NS1TX9NOQ5O_UB5u66wATI7GADfJI")
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
